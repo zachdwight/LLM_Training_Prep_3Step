@@ -1,4 +1,4 @@
-# Automated Chatbot Data Generator
+# Automated Dataset Generation and Prep for LLM fine-tuning
 
 This repository provides a two-stage Python pipeline to help you create a high-quality dataset for fine-tuning a Large Language Model (LLM) on the content of a PDF textbook, our example being molecular diagnostics. This approach leverages a local, smaller LLM for initial suggestions and a more powerful LLM (via API or a larger local model) for refining those suggestions into a structured, fine-tuning-ready format.   Please note, Google Gemini was used to organize / rewrite code and documenation for better understanding.
 
