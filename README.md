@@ -105,24 +105,25 @@ This pipeline consists of two sequential Python scripts.
 Step 1: Generate LLM-Assisted Q&amp;A Suggestions
 
 Run this script (generate_llm_assisted_qa.py) to parse your PDF, chunk its content, and use your local Llama-Express.1-Tiny model to generate summaries and potential questions for each chunk. The output is a human-readable text file that you'll use for refinement in the next step.
-Bash
 
+```
 python generate_llm_assisted_qa.py
+```
 
 What it does:
 
-    Reads molecular_diagnostics_textbook.pdf.
-    Uses Unstructured.io for advanced PDF text extraction and semantic chunking.
-    Loads your local LLM (prithivMLmods/Llama-Express.1-Tiny).
-    For each text chunk, it prompts your local LLM to generate a summary and a list of suggested questions.
-    Saves these suggestions, along with the original chunk, to molecular_diagnostics_qa_suggestions.txt.
+    - Reads molecular_diagnostics_textbook.pdf.
+    - Uses Unstructured.io for advanced PDF text extraction and semantic chunking.
+    - Loads your local LLM (prithivMLmods/Llama-Express.1-Tiny).
+    - For each text chunk, it prompts your local LLM to generate a summary and a list of suggested questions.
+    - Saves these suggestions, along with the original chunk, to molecular_diagnostics_qa_suggestions.txt.
 
 Step 2: Finalize Q&amp;A Data with a Stronger LLM
 
 Next, run this script (finalize_qa_data.py). It takes the suggestions from Step 1 and uses a more powerful LLM (e.g., OpenAI's GPT-4o, or a locally served Llama 3) to convert them into a structured JSON Lines (.jsonl) dataset. This is the dataset ready for fine-tuning.
 
 Before running, you'll need to configure the LLM client directly in finalize_qa_data.py:
-Python
+
 ```
 # Open `finalize_qa_data.py` and choose your client type by commenting/uncommenting:
 
@@ -143,11 +144,11 @@ python finalize_qa_data.py
 ```
 What it does:
 
-    Reads molecular_diagnostics_qa_suggestions.txt.
-    Connects to the specified stronger LLM (OpenAI API or local Ollama).
-    For each entry from the suggestions file, it prompts the powerful LLM with the original text chunk and the local LLM's suggestions.
-    It instructs the LLM to generate 2-4 highly accurate, concise, and grounded Q&amp;A pairs in a strict JSON format.
-    Saves the resulting Q&amp;A pairs into molecular_diagnostics_qa.jsonl, which is formatted for SFTTrainer.
+    - Reads molecular_diagnostics_qa_suggestions.txt.
+    - Connects to the specified stronger LLM (OpenAI API or local Ollama).
+    - For each entry from the suggestions file, it prompts the powerful LLM with the original text chunk and the local LLM's suggestions.
+    - It instructs the LLM to generate 2-4 highly accurate, concise, and grounded Q&amp;A pairs in a strict JSON format.
+    - Saves the resulting Q&amp;A pairs into molecular_diagnostics_qa.jsonl, which is formatted for SFTTrainer.
 
 ## 6. Output Files
 
@@ -161,7 +162,7 @@ With molecular_diagnostics_qa.jsonl in hand, you're ready to fine-tune TinyLlama
 When setting up your fine-tuning script, remember these key points:
 
     Load your dataset using Hugging Face's datasets library:
-    Python
+   
 ```
 from datasets import load_dataset
 dataset = load_dataset('json', data_files='molecular_diagnostics_qa.jsonl')
@@ -173,12 +174,12 @@ Python
 ```
 ## 8. Important Notes & Considerations
 
-    Cost: Using powerful LLM APIs (like OpenAI's GPT-4o) for finalize_qa_data.py will incur costs based on token usage. It's wise to monitor your API dashboard to keep track of expenses.
-    Quality Control (Human Review): While this pipeline automates a significant portion of the data generation, manual review of a sample of molecular_diagnostics_qa.jsonl is highly recommended, especially for critical applications. Even powerful LLMs can occasionally hallucinate, misinterpret context, or produce less-than-ideal answers.
-    LLM Capabilities: The quality of the generated Q&amp;A (especially in Step 2) is directly dependent on the capabilities of the LLM you choose for finalization. Generally, stronger models will yield better results.
-    PDF Complexity: This pipeline works best with well-structured PDFs. If your textbook has a very complex layout, is a scanned PDF (without high-quality OCR), or has fragmented text, you might find that Unstructured.io struggles, potentially requiring additional preprocessing or manual intervention.
-    Chunking Strategy: The Unstructured.io parameters like chunking_strategy and max_characters in generate_llm_assisted_qa.py are quite important. You might need to experiment with these values to find the optimal chunk size that provides enough context for Q&amp;A without overwhelming the LLMs.
-    Prompt Engineering: The prompts used in both scripts (LOCAL_LLM_SUGGESTION_PROMPT_TEMPLATE and FINALIZATION_PROMPT_TEMPLATE) are crucial. You might need to fine-tune them based on the specific content of your textbook and the desired style and depth of your Q&amp;A.
+    - Cost: Using powerful LLM APIs (like OpenAI's GPT-4o) for finalize_qa_data.py will incur costs based on token usage. It's wise to monitor your API dashboard to keep track of expenses.
+    - Quality Control (Human Review): While this pipeline automates a significant portion of the data generation, manual review of a sample of molecular_diagnostics_qa.jsonl is highly recommended, especially for critical applications. Even powerful LLMs can occasionally hallucinate, misinterpret context, or produce less-than-ideal answers.
+    - LLM Capabilities: The quality of the generated Q&amp;A (especially in Step 2) is directly dependent on the capabilities of the LLM you choose for finalization. Generally, stronger models will yield better results.
+    - PDF Complexity: This pipeline works best with well-structured PDFs. If your textbook has a very complex layout, is a scanned PDF (without high-quality OCR), or has fragmented text, you might find that Unstructured.io struggles, potentially requiring additional preprocessing or manual intervention.
+    - Chunking Strategy: The Unstructured.io parameters like chunking_strategy and max_characters in generate_llm_assisted_qa.py are quite important. You might need to experiment with these values to find the optimal chunk size that provides enough context for Q&amp;A without overwhelming the LLMs.
+    - Prompt Engineering: The prompts used in both scripts (LOCAL_LLM_SUGGESTION_PROMPT_TEMPLATE and FINALIZATION_PROMPT_TEMPLATE) are crucial. You might need to fine-tune them based on the specific content of your textbook and the desired style and depth of your Q&amp;A.
 
 ## 9. License
 
