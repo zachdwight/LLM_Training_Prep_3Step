@@ -1,6 +1,6 @@
-# Molecular Diagnostics Chatbot Data Generator
+# Automated Chatbot Data Generator
 
-This repository provides a two-stage Python pipeline to help you create a high-quality dataset for fine-tuning a Large Language Model (LLM) on the content of a PDF textbook, specifically tailored for molecular diagnostics. This approach leverages a local, smaller LLM for initial suggestions and a more powerful LLM (via API or a larger local model) for refining those suggestions into a structured, fine-tuning-ready format.
+This repository provides a two-stage Python pipeline to help you create a high-quality dataset for fine-tuning a Large Language Model (LLM) on the content of a PDF textbook, our example being molecular diagnostics. This approach leverages a local, smaller LLM for initial suggestions and a more powerful LLM (via API or a larger local model) for refining those suggestions into a structured, fine-tuning-ready format.
 
 ---
 
@@ -151,8 +151,8 @@ What it does:
 
 ## 6. Output Files
 
-    molecular_diagnostics_qa_suggestions.txt: This is an intermediate output from Step 1. It's a human-readable file containing original text chunks and suggestions from your local LLM. While it's mainly for the second script, you can review it for debugging or understanding the initial LLM output.
-    molecular_diagnostics_qa.jsonl: This is the final output from Step 2. It's a meticulously prepared dataset, where each line is a JSON object with a text key. This text key contains a formatted instruction-response pair (<|user|>\nYour question here\n<|assistant|>\nYour answer here). This file is ready for LLM fine-tuning.
+    - molecular_diagnostics_qa_suggestions.txt: This is an intermediate output from Step 1. It's a human-readable file containing original text chunks and suggestions from your local LLM. While it's mainly for the second script, you can review it for debugging or understanding the initial LLM output.
+    - molecular_diagnostics_qa.jsonl: This is the final output from Step 2. It's a meticulously prepared dataset, where each line is a JSON object with a text key. This text key contains a formatted instruction-response pair (<|user|>\nYour question here\n<|assistant|>\nYour answer here). This file is ready for LLM fine-tuning.
 
 ## 7. Next Steps: Fine-tuning Your LLM
 
