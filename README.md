@@ -76,8 +76,8 @@ This two-stage approach provides a balance of automation, cost-efficiency, and q
 Clone this repository and install the required Python packages:
 
 ```bash
-git clone [https://github.com/zachdwight/LLM_TrainingPrep_Local2Large.git]([https://github.com/your-username/molecular-diagnostics-chatbot-data-generator.git](https://github.com/zachdwight/LLM_TrainingPrep_Local2Large.git))
-cd molecular-diagnostics-chatbot-data-generator
+git clone https://github.com/zachdwight/LLM_TrainingPrep_Local2Large.git
+cd LLM_TrainingPrep_Local2Large
 
 # Install core Python dependencies
 pip install unstructured["pdf"] transformers torch tqdm openai reportlab # reportlab is for creating a dummy PDF if needed
