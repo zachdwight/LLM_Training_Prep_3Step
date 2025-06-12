@@ -107,7 +107,7 @@ Step 1: Generate LLM-Assisted Q&amp;A Suggestions
 Run this script (generate_llm_assisted_qa.py) to parse your PDF, chunk its content, and use your local Llama-Express.1-Tiny model to generate summaries and potential questions for each chunk. The output is a human-readable text file that you'll use for refinement in the next step.
 
 ```
-python generate_llm_assisted_qa.py
+python local_LLM_data_prep.py
 ```
 
 What it does:
