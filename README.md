@@ -120,9 +120,9 @@ What it does:
 
 Step 2: Finalize Q&amp;A Data with a Stronger LLM
 
-Next, run this script (finalize_qa_data.py). It takes the suggestions from Step 1 and uses a more powerful LLM (e.g., OpenAI's GPT-4o, or a locally served Llama 3) to convert them into a structured JSON Lines (.jsonl) dataset. This is the dataset ready for fine-tuning.
+Next, run this script (finalize_tuning_data.py). It takes the suggestions from Step 1 and uses a more powerful LLM (e.g., OpenAI's GPT-4o, or a locally served Llama 3) to convert them into a structured JSON Lines (.jsonl) dataset. This is the dataset ready for fine-tuning.
 
-Before running, you'll need to configure the LLM client directly in finalize_qa_data.py:
+Before running, you'll need to configure the LLM client directly in finalize_tuning_data.py:
 
 ```
 # Open `finalize_qa_data.py` and choose your client type by commenting/uncommenting:
@@ -140,7 +140,7 @@ QA_FINALIZATION_MODEL = "gpt-4o" # You can also try "gpt-4-turbo", "gpt-3.5-turb
 Once configured, run the script:
 
 ```
-python finalize_qa_data.py
+python finalize_tuning_data.py
 ```
 What it does:
 
