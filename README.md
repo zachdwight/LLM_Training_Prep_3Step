@@ -97,7 +97,7 @@ brew install poppler tesseract
 
 ### PDF Textbook
 
-Place your molecular diagnostics textbook PDF file in the root directory of this repository and name it molecular_diagnostics_textbook.pdf.
+Place your molecular diagnostics textbook PDF file in the root directory of this repository and name it molecular_diagnostics_textbook.pdf and be respectful of others copyright.
 
 ## 5. Usage
 
