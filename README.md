@@ -2,38 +2,45 @@
 
 This repository provides a two-stage Python pipeline to help you create a high-quality dataset for fine-tuning a Large Language Model (LLM) on the content of a PDF textbook, our example being molecular diagnostics. This approach leverages a local, smaller LLM for initial suggestions and a more powerful LLM (via API or a larger local model) for refining those suggestions into a structured, fine-tuning-ready format.   
 
-Please note, Google Gemini was used to organize / rewrite code and documenation for better understanding (hopefully no mismatches in file names, etc).
+Please note, Google Gemini & OpneAI were used to organize / rewrite code and documenation for better understanding (hopefully no mismatches in file names, etc).
 
-## Bird's Eye View
+# Two-Step Pipeline Overview
 
-- Step 1: Local Model for Initial Suggestions
+## Step 1: Local Model for Initial Suggestions
 
-    Objective: Utilize a smaller, local LLM to generate preliminary suggestions from a PDF textbook.
+- **Objective**:  
+  Utilize a smaller, local LLM to generate preliminary suggestions from a PDF textbook.
 
-    Process:
+- **Process**:
+  - Extract text from the PDF.
+  - Input extracted content into the local LLM.
+  - Generate initial suggestions or summaries.
 
-        Extract text from the PDF.
+- **Output**:  
+  A set of preliminary suggestions ready for refinement.
 
-        Input extracted content into the local LLM.
+---
 
-        Generate initial suggestions or summaries.
+## Step 2: Large Model for Refinement
 
-    Output: A set of preliminary suggestions ready for refinement.
-    reddit.com
-    reddit.com+3towardsdatascience.com+3github.com+3
-    aifordevelopers.io
+- **Objective**:  
+  Employ a more powerful LLM (via API or a larger local model) to refine the initial suggestions into a structured, fine-tuning-ready format.
 
-- Step 2: Large Model for Refinement
+- **Process**:
+  - Input preliminary suggestions into the large LLM.
+  - Refine and structure the suggestions.
 
-    Objective: Employ a more powerful LLM (via API or a larger local model) to refine the initial suggestions into a structured, fine-tuning-ready format.
+- **Output**:  
+  A high-quality dataset suitable for fine-tuning an LLM.
 
-    Process:
+---
 
-        Input preliminary suggestions into the large LLM.
+This two-step approach leverages:
+- ✅ The **efficiency** of a local model for quick, low-cost processing, and
+- ✅ The **capability** of a larger model for precision and structure.
 
-        Refine and structure the suggestions.
+> Optimizing the dataset creation process for LLM fine-tuning.
 
-    Output: A high-quality dataset suitable for fine-tuning an LLM.
 ---
 
 ## Table of Contents
