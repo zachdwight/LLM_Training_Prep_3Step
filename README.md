@@ -4,7 +4,29 @@ This repository provides a two-stage Python pipeline to help you create a high-q
 
 Please note, Google Gemini & OpneAI were used to organize / rewrite code and documenation for better understanding (hopefully no mismatches in file names, etc).
 
-# Two-Step Pipeline Overview
+
+---
+
+## Table of Contents
+
+1.  [Introduction](#introduction)
+2.  [Features](#features)
+3.  [Prerequisites](#prerequisites)
+4.  [Setup](#setup)
+    * [API Keys](#api-keys)
+    * [Installation](#installation)
+    * [PDF Textbook](#pdf-textbook)
+5.  [Usage](#usage)
+    * [Step 1: Generate LLM-Assisted Q&A Suggestions](#step-1-generate-llm-assisted-qa-suggestions)
+    * [Step 2: Finalize Q&A Data with a Stronger LLM](#step-2-finalize-qa-data-with-a-stronger-llm)
+6.  [Output Files](#output-files)
+7.  [Next Steps: Fine-tuning Your LLM](#next-steps-fine-tuning-your-llm)
+8.  [Important Notes & Considerations](#important-notes--considerations)
+9.  [License](#license)
+
+---
+
+## 1. Introduction / Two-Step Pipeline Overview
 
 ## Step 1: Local Model for Initial Suggestions
 
@@ -39,38 +61,7 @@ This two-step approach leverages:
 - ✅ The **efficiency** of a local model for quick, low-cost processing, and
 - ✅ The **capability** of a larger model for precision and structure.
 
-> Optimizing the dataset creation process for LLM fine-tuning.
 
----
-
-## Table of Contents
-
-1.  [Introduction](#introduction)
-2.  [Features](#features)
-3.  [Prerequisites](#prerequisites)
-4.  [Setup](#setup)
-    * [API Keys](#api-keys)
-    * [Installation](#installation)
-    * [PDF Textbook](#pdf-textbook)
-5.  [Usage](#usage)
-    * [Step 1: Generate LLM-Assisted Q&A Suggestions](#step-1-generate-llm-assisted-qa-suggestions)
-    * [Step 2: Finalize Q&A Data with a Stronger LLM](#step-2-finalize-qa-data-with-a-stronger-llm)
-6.  [Output Files](#output-files)
-7.  [Next Steps: Fine-tuning Your LLM](#next-steps-fine-tuning-your-llm)
-8.  [Important Notes & Considerations](#important-notes--considerations)
-9.  [License](#license)
-
----
-
-## 1. Introduction
-
-Training an LLM to accurately answer questions from specific documents, like a textbook, requires carefully prepared instruction-response pairs. Directly feeding raw PDF text rarely yields optimal results. This pipeline addresses this by:
-
-1.  **Extracting structured content** from your PDF.
-2.  Using a **local, smaller LLM** to generate initial summaries and question *suggestions* from these content chunks. This helps automate the first pass of data creation without external API costs.
-3.  Using a **stronger, more capable LLM** (e.g., GPT-4o, Llama 3 via API/local server) to refine these suggestions into a precise, well-formatted Question-Answer (Q&A) dataset in JSON Lines (`.jsonl`) format, suitable for instruction fine-tuning.
-
-This two-stage approach provides a balance of automation, cost-efficiency, and quality control for your dataset generation.
 
 ---
 
