@@ -26,9 +26,9 @@ Please note, Google Gemini & OpneAI were used to organize / rewrite code and doc
 
 ---
 
-## 1. Introduction / Two-Step Pipeline Overview
+## 1. Introduction (Two-Step Pipeline)
 
-## Step 1: Local Model for Initial Suggestions
+### Step 1: Local Model for Initial Suggestions
 
 - **Objective**:  
   Utilize a smaller, local LLM to generate preliminary suggestions from a PDF textbook.
@@ -43,7 +43,7 @@ Please note, Google Gemini & OpneAI were used to organize / rewrite code and doc
 
 ---
 
-## Step 2: Large Model for Refinement
+### Step 2: Large Model for Refinement
 
 - **Objective**:  
   Employ a more powerful LLM (via API or a larger local model) to refine the initial suggestions into a structured, fine-tuning-ready format.
