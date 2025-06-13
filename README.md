@@ -4,6 +4,36 @@ This repository provides a two-stage Python pipeline to help you create a high-q
 
 Please note, Google Gemini was used to organize / rewrite code and documenation for better understanding (hopefully no mismatches in file names, etc).
 
+## Bird's Eye View
+
+- Step 1: Local Model for Initial Suggestions
+
+    Objective: Utilize a smaller, local LLM to generate preliminary suggestions from a PDF textbook.
+
+    Process:
+
+        Extract text from the PDF.
+
+        Input extracted content into the local LLM.
+
+        Generate initial suggestions or summaries.
+
+    Output: A set of preliminary suggestions ready for refinement.
+    reddit.com
+    reddit.com+3towardsdatascience.com+3github.com+3
+    aifordevelopers.io
+
+- Step 2: Large Model for Refinement
+
+    Objective: Employ a more powerful LLM (via API or a larger local model) to refine the initial suggestions into a structured, fine-tuning-ready format.
+
+    Process:
+
+        Input preliminary suggestions into the large LLM.
+
+        Refine and structure the suggestions.
+
+    Output: A high-quality dataset suitable for fine-tuning an LLM.
 ---
 
 ## Table of Contents
