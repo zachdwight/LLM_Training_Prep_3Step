@@ -4,6 +4,9 @@ This repository provides a two-stage Python pipeline to help you create a high-q
 
 Please note, Google Gemini & OpenAI were used to organize / rewrite some of my code and documention for better understanding (hopefully no mismatches in file names, etc).
 
+This two-step approach leverages:
+- ✅ The **efficiency** of a local model for quick, low-cost processing, and
+- ✅ The **capability** of a larger model for precision and structure.
 
 ---
 
@@ -57,13 +60,6 @@ Please note, Google Gemini & OpenAI were used to organize / rewrite some of my c
 
 ---
 
-This two-step approach leverages:
-- ✅ The **efficiency** of a local model for quick, low-cost processing, and
-- ✅ The **capability** of a larger model for precision and structure.
-
-
-
----
 
 ## 2. Features
 
