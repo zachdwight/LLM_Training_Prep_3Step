@@ -1,8 +1,9 @@
 import os
 import json
 import re
-from openai import OpenAI # Or client for your chosen larger LLM (e.g., ollama, vllm, litellm)
+# from openai import OpenAI # Remove or comment out this line
 from tqdm.auto import tqdm
+import google.generativeai as genai # Import the Gemini library
 
 # --- Configuration ---
 SUGGESTIONS_INPUT_PATH = "molecular_diagnostics_qa_suggestions.txt"
@@ -10,11 +11,11 @@ FINAL_JSONL_OUTPUT_PATH = "molecular_diagnostics_qa.jsonl" # This is the file fo
 
 # --- Larger LLM Configuration (Choose one) ---
 
-# OPTION 1: OpenAI API (Recommended for reliability and quality)
-# Ensure OPENAI_API_KEY environment variable is set
-API_CLIENT_TYPE = "openai"
-API_KEY = os.getenv("OPENAI_API_KEY")
-QA_FINALIZATION_MODEL = "gpt-4o" # Or "gpt-4-turbo", "gpt-3.5-turbo"
+# OPTION 1: Google Gemini API (Recommended for reliability and quality)
+# Ensure GOOGLE_API_KEY environment variable is set
+API_CLIENT_TYPE = "gemini"
+API_KEY = os.getenv("GOOGLE_API_KEY") # Changed to GOOGLE_API_KEY
+QA_FINALIZATION_MODEL = "gemini-1.5-flash-latest" # Or "gemini-1.5-pro-latest" or other Gemini models
 
 # OPTION 2: Local LLM (e.g., via `ollama` or `vllm` for larger models)
 # This requires a local server running your chosen model.
@@ -55,20 +56,31 @@ TINYLAMA_CHAT_TEMPLATE = "<|user|>\n{instruction}\n<|assistant|>\n{response}"
 
 # --- Initialize LLM Client ---
 def initialize_llm_client(client_type, model_name, api_key=None, api_base=None):
-    if client_type == "openai":
+    if client_type == "gemini":
         if api_key is None:
-            raise ValueError("OPENAI_API_KEY environment variable not set.")
-        return OpenAI(api_key=api_key)
+            raise ValueError("GOOGLE_API_KEY environment variable not set.")
+        genai.configure(api_key=api_key)
+        # For Gemini, we return the genai object and model name to be used directly
+        return genai, model_name
     elif client_type == "local_ollama":
         if api_base is None:
             raise ValueError("OLLAMA_API_BASE must be set for local_ollama client.")
         # Ollama's API is OpenAI compatible, so we can use the OpenAI client
-        return OpenAI(base_url=api_base, api_key="ollama") # api_key can be anything for local
+        from openai import OpenAI # Import OpenAI here if only used for local
+        return OpenAI(base_url=api_base, api_key="ollama"), model_name # api_key can be anything for local
     else:
         raise ValueError(f"Unsupported API_CLIENT_TYPE: {client_type}")
 
-llm_client = initialize_llm_client(API_CLIENT_TYPE, QA_FINALIZATION_MODEL, API_KEY, OLLAMA_API_BASE if 'OLLAMA_API_BASE' in locals() else None)
-print(f"Initialized LLM client for model: {QA_FINALIZATION_MODEL}")
+# Modified initialization to handle Gemini's client structure
+if API_CLIENT_TYPE == "gemini":
+    genai_client, QA_FINALIZATION_MODEL_NAME = initialize_llm_client(API_CLIENT_TYPE, QA_FINALIZATION_MODEL, API_KEY)
+    llm_client = genai_client.GenerativeModel(QA_FINALIZATION_MODEL_NAME)
+else:
+    # This part handles OpenAI and local Ollama as before
+    llm_client_instance, QA_FINALIZATION_MODEL_NAME = initialize_llm_client(API_CLIENT_TYPE, QA_FINALIZATION_MODEL, API_KEY, OLLAMA_API_BASE if 'OLLAMA_API_BASE' in locals() else None)
+    llm_client = llm_client_instance
+
+print(f"Initialized LLM client for model: {QA_FINALIZATION_MODEL_NAME}")
 
 
 # --- Functions ---
