@@ -18,7 +18,7 @@ SUGGESTIONS_OUTPUT_PATH = "molecular_diagnostics_qa_suggestions.txt" # Output fi
 MODEL_ID = "prithivMLmods/Llama-Express.1-Tiny"
 
 # Parameters for Unstructured.io PDF parsing
-UNSTRUCTURED_STRATEGY = "auto" # "auto", "fast", "hi_res" - hi_res can be slower but more accurate
+UNSTRUCTURED_STRATEGY = "fast" # "auto", "fast", "hi_res" - hi_res can be slower but more accurate
 
 # Prompt for the local LLM to generate suggestions
 # Emphasize summary or question ideas, not structured Q&A JSON.
