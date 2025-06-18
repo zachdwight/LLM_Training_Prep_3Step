@@ -70,7 +70,7 @@ def get_text_chunks_from_elements(elements):
     text_chunks = []
     current_chunk = ""
     for element in elements:
-        if element.category in ["NarrativeText", "ListItem", "Title", "Header"]:
+        if hasattr(element, "text") and element.text: #loosen or tighten this condition to filter elements
             text_to_add = element.text.strip()
             if text_to_add:
                 # Simple heuristic to combine small text bits
