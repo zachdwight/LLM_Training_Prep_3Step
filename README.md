@@ -84,16 +84,16 @@ This two-step approach leverages:
 
 ### API Keys
 
-* **OpenAI API Key:**
-    If you're using OpenAI for the final Q&A generation (which we recommend for reliability and quality), get an API key from [OpenAI](https://platform.openai.com/account/api-keys).
+* **Google Gemini API Key:**
+    If you're using OpenAI for the final Q&A generation (which we recommend for reliability and quality), get an API key from Google AI Studio.
     Set it as an **environment variable**:
     ```bash
-    # For Linux/macOS
-    export OPENAI_API_KEY='your_api_key_here'
-    # For Windows (Command Prompt)
-    set OPENAI_API_KEY=your_api_key_here
-    # For Windows (PowerShell)
-    $env:OPENAI_API_KEY='your_api_key_here'
+# For Linux/macOS
+export GEMINI_API_KEY='your_api_key_here'
+# For Windows (Command Prompt)
+set GEMINI_API_KEY=your_api_key_here
+# For Windows (PowerShell)
+$env:GEMINI_API_KEY='your_api_key_here'
     ```
     (It's a good idea to add this to your shell's profile file, e.g., `~/.bashrc` or `~/.zshrc`, so it's always set.)
 
