@@ -84,18 +84,25 @@ This two-step approach leverages:
 
 ### API Keys
 
-* **Google Gemini API Key:**
-    If you're using OpenAI for the final Q&A generation (which we recommend for reliability and quality), get an API key from Google AI Studio.
-    Set it as an **environment variable**:
+---
+* **Google Gemini API Key:** To use Google Gemini for Q&A generation (or other AI tasks), you'll need an API key from Google AI Studio.
+
+    1.  Go to [Google AI Studio](https://aistudio.google.com/app/apikey) and sign in with your Google account.
+    2.  Follow the prompts to **create a new API key**.
+    3.  Once generated, set it as an **environment variable**. The recommended variable name is `GEMINI_API_KEY`.
+
     ```bash
-# For Linux/macOS
-export GEMINI_API_KEY='your_api_key_here'
-# For Windows (Command Prompt)
-set GEMINI_API_KEY=your_api_key_here
-# For Windows (PowerShell)
-$env:GEMINI_API_KEY='your_api_key_here'
+    # For Linux/macOS
+    export GEMINI_API_KEY='your_api_key_here'
+    # For Windows (Command Prompt)
+    set GEMINI_API_KEY=your_api_key_here
+    # For Windows (PowerShell)
+    $env:GEMINI_API_KEY='your_api_key_here'
     ```
-    (It's a good idea to add this to your shell's profile file, e.g., `~/.bashrc` or `~/.zshrc`, so it's always set.)
+    (It's a good idea to add this to your shell's profile file, like `~/.bashrc` or `~/.zshrc`, so it's always set.)
+
+**Important Security Note:** Never hardcode your API key directly into your application's code, especially for client-side applications. Always use environment variables or a secure secret management service.
+
 
 ### Installation
 
