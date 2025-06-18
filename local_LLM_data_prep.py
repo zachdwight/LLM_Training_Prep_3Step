@@ -1,6 +1,10 @@
 import os
 import json
 from unstructured.partition.pdf import partition_pdf
+#---
+#Notes/Fixes: You may need to downgrade/specify pdfminer (pip install pdfminer.sxi==20220524) for unstructured
+#---
+
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from tqdm.auto import tqdm
