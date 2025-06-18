@@ -9,6 +9,18 @@ import google.generativeai as genai # Import the Gemini library
 SUGGESTIONS_INPUT_PATH = "molecular_diagnostics_qa_suggestions.txt"
 FINAL_JSONL_OUTPUT_PATH = "molecular_diagnostics_qa.jsonl" # This is the file for fine-tuning
 
+
+
+
+
+### HEADS UP...there are a couple issue still I'm debugging trying to make this user friendly and stick into docker
+
+# READ ABOVE ^
+
+
+
+
+
 # --- Larger LLM Configuration (Choose one) ---
 
 # OPTION 1: Google Gemini API (Recommended for reliability and quality)
