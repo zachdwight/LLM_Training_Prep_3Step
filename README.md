@@ -2,13 +2,13 @@
 
 This repository provides a two-stage Python pipeline to help you create a high-quality dataset for fine-tuning a Large Language Model (LLM) on the content of a PDF textbook, our example being molecular diagnostics. This approach leverages a local, smaller LLM for initial suggestions and a more powerful LLM (via API or a larger local model) for refining those suggestions into a structured, fine-tuning-ready format.   
 
-Please note, Google Gemini & OpenAI were used to organize / rewrite some of my code and documention for better understanding (hopefully no mismatches in file names, etc).
+Please note, Google Gemini & OpenAI were used to organize / rewrite some of my code and documention for better understanding (hopefully no mismatches in file names, etc).  2nd Note - different APIs or models may cause JSON issues (I'll try and get something up here more robust).
+
 
 This two-step approach leverages:
 - ✅ The **efficiency** of a local model for quick, low-cost processing, and
 - ✅ The **capability** of a larger model for precision and structure.
 
-2nd Note - different APIs or models may cause JSON issues (I'll try and get something up here more robust).
 ---
 
 ## Table of Contents
