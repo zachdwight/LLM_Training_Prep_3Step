@@ -8,6 +8,7 @@ This two-step approach leverages:
 - ✅ The **efficiency** of a local model for quick, low-cost processing, and
 - ✅ The **capability** of a larger model for precision and structure.
 
+2nd Note - different APIs or models may cause JSON issues (I'll try and get something up here more robust).
 ---
 
 ## Table of Contents
