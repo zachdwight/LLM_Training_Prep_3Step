@@ -66,7 +66,7 @@ This two-step approach leverages:
 * **Robust PDF Parsing:** Utilizes `Unstructured.io` for intelligent extraction of text, titles, and tables from complex PDF layouts.
 * **Semantic Chunking:** Organizes extracted content into coherent, context-rich chunks.
 * **Local LLM Assistance:** Employs your specified local LLM (`prithivMLmods/Llama-Express.1-Tiny` in the example) to provide summaries and question ideas for each chunk.
-* **Automated Q&A Finalization:** Leverages a powerful LLM (e.g., OpenAI's GPT-4o, or a strong self-hosted model) to convert suggestions into structured Q&A pairs.
+* **Automated Q&A Finalization:** Leverages a powerful LLM (e.g., Google Gemini or OpenAI, or a strong self-hosted model) to convert suggestions into structured Q&A pairs.
 * **Fine-tuning Ready Output:** Generates a `.jsonl` file formatted for direct use with Hugging Face's `SFTTrainer` (e.g., for `TinyLlama/TinyLlama-1.1B-Chat-v1.0`).
 
 ---
