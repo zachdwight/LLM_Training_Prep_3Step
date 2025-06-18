@@ -215,7 +215,7 @@ if __name__ == "__main__":
 
         # Optional: Add a delay to avoid hitting API rate limits if using a paid API
         # import time
-        # time.sleep(0.1)
+        # time.sleep(0.1) (google gemini 1.5 should be set at 4.0 due to 15 RPM
 
     print(f"\nFinished finalizing Q&A pairs. Total pairs generated: {total_qa_finalized}")
     print(f"Final fine-tuning dataset saved to: {FINAL_JSONL_OUTPUT_PATH}")
