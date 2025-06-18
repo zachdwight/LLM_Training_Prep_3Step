@@ -60,25 +60,26 @@ def initialize_llm_client(client_type, model_name, api_key=None, api_base=None):
         if api_key is None:
             raise ValueError("GOOGLE_API_KEY environment variable not set.")
         genai.configure(api_key=api_key)
-        # For Gemini, we return the genai object and model name to be used directly
-        return genai, model_name
+        # For Gemini, we return the GenerativeModel object directly
+        return genai.GenerativeModel(model_name)
     elif client_type == "local_ollama":
         if api_base is None:
             raise ValueError("OLLAMA_API_BASE must be set for local_ollama client.")
         # Ollama's API is OpenAI compatible, so we can use the OpenAI client
         from openai import OpenAI # Import OpenAI here if only used for local
+        # Return the OpenAI client instance and the model name separately
         return OpenAI(base_url=api_base, api_key="ollama"), model_name # api_key can be anything for local
     else:
         raise ValueError(f"Unsupported API_CLIENT_TYPE: {client_type}")
 
 # Modified initialization to handle Gemini's client structure
 if API_CLIENT_TYPE == "gemini":
-    genai_client, QA_FINALIZATION_MODEL_NAME = initialize_llm_client(API_CLIENT_TYPE, QA_FINALIZATION_MODEL, API_KEY)
-    llm_client = genai_client.GenerativeModel(QA_FINALIZATION_MODEL_NAME)
+    llm_client = initialize_llm_client(API_CLIENT_TYPE, QA_FINALIZATION_MODEL, API_KEY)
+    QA_FINALIZATION_MODEL_NAME = QA_FINALIZATION_MODEL # Set model name for print statement
 else:
     # This part handles OpenAI and local Ollama as before
     llm_client_instance, QA_FINALIZATION_MODEL_NAME = initialize_llm_client(API_CLIENT_TYPE, QA_FINALIZATION_MODEL, API_KEY, OLLAMA_API_BASE if 'OLLAMA_API_BASE' in locals() else None)
-    llm_client = llm_client_instance
+    llm_client = llm_client_instance # Assign the client instance
 
 print(f"Initialized LLM client for model: {QA_FINALIZATION_MODEL_NAME}")
 
@@ -121,7 +122,7 @@ def parse_suggestions_file(file_path):
     print(f"Parsed {len(chunks_data)} chunks from suggestions file.")
     return chunks_data
 
-def generate_final_qa(original_chunk, llm_suggestions, api_client, model_name):
+def generate_final_qa(original_chunk, llm_suggestions, api_client, model_name, api_client_type):
     """
     Uses the larger LLM to generate final Q&A pairs from the original chunk and suggestions.
     """
@@ -129,20 +130,29 @@ def generate_final_qa(original_chunk, llm_suggestions, api_client, model_name):
         original_chunk=original_chunk,
         llm_suggestions=llm_suggestions
     )
-    messages = [
-        {"role": "system", "content": "You are a highly accurate data curator and molecular diagnostics expert."},
-        {"role": "user", "content": prompt}
-    ]
+    qa_pairs_raw = ""
     try:
-        response = api_client.chat.completions.create(
-            model=model_name,
-            messages=messages,
-            response_format={"type": "json_object"}, # Request JSON response
-            temperature=0.0, # Keep temperature low for factual extraction
-            max_tokens=500, # Adjust token limit for the expected Q&A output
-            seed=42 # For reproducibility if model supports it
-        )
-        qa_pairs_raw = response.choices[0].message.content
+        if api_client_type == "gemini":
+            # Gemini's generate_content directly takes the prompt
+            response = api_client.generate_content(prompt)
+            qa_pairs_raw = response.text
+        elif api_client_type == "openai" or api_client_type == "local_ollama":
+            messages = [
+                {"role": "system", "content": "You are a highly accurate data curator and molecular diagnostics expert."},
+                {"role": "user", "content": prompt}
+            ]
+            response = api_client.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                response_format={"type": "json_object"}, # Request JSON response
+                temperature=0.0, # Keep temperature low for factual extraction
+                max_tokens=500, # Adjust token limit for the expected Q&A output
+                seed=42 # For reproducibility if model supports it
+            )
+            qa_pairs_raw = response.choices[0].message.content
+        else:
+            raise ValueError(f"Unsupported API_CLIENT_TYPE: {api_client_type}")
+
         qa_pairs = json.loads(qa_pairs_raw)
         if not isinstance(qa_pairs, list):
             print(f"Warning: LLM returned non-list JSON: {qa_pairs_raw[:100]}...")
@@ -150,11 +160,11 @@ def generate_final_qa(original_chunk, llm_suggestions, api_client, model_name):
         valid_qa = [p for p in qa_pairs if "instruction" in p and "response" in p and p["instruction"] and p["response"]]
         return valid_qa
     except json.JSONDecodeError as e:
-        print(f"JSON decoding error for chunk (ID: {chunk_id}, might be an LLM formatting issue): {e}")
+        print(f"JSON decoding error for chunk (might be an LLM formatting issue): {e}")
         print(f"Raw LLM response: {qa_pairs_raw[:500]}...")
         return []
     except Exception as e:
-        print(f"Error generating final QA for chunk (ID: {chunk_id}): {e}")
+        print(f"Error generating final QA: {e}")
         return []
 
 def append_qa_to_jsonl(qa_data, output_file):
@@ -188,7 +198,7 @@ if __name__ == "__main__":
     total_qa_finalized = 0
     print("\n--- Finalizing Q&A pairs (this may take a while and consume API tokens if using API LLM) ---")
     for i, chunk_data in enumerate(tqdm(chunks_for_finalization, desc="Finalizing Q&A for chunks")):
-        chunk_id = chunk_data["chunk_id"]
+        chunk_id = chunk_data["chunk_id"] # Make sure chunk_id is available for error messages
         original_chunk = chunk_data["original_chunk"]
         llm_suggestions = chunk_data["llm_suggestions"]
 
@@ -197,7 +207,8 @@ if __name__ == "__main__":
             # print(f"Skipping very short original chunk (ID: {chunk_id}).")
             continue
 
-        qa_pairs = generate_final_qa(original_chunk, llm_suggestions, llm_client, QA_FINALIZATION_MODEL)
+        # Pass API_CLIENT_TYPE to the function
+        qa_pairs = generate_final_qa(original_chunk, llm_suggestions, llm_client, QA_FINALIZATION_MODEL, API_CLIENT_TYPE)
         if qa_pairs:
             append_qa_to_jsonl(qa_pairs, FINAL_JSONL_OUTPUT_PATH)
             total_qa_finalized += len(qa_pairs)
