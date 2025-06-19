@@ -11,11 +11,14 @@ SUGGESTIONS_INPUT_PATH = "molecular_diagnostics_qa_suggestions.txt"
 FINAL_JSONL_OUTPUT_PATH = "molecular_diagnostics_qa.jsonl" # This is the file for fine-tuning
 
 # --- Larger LLM Configuration (Choose one) ---
+os.environ['MY_API_KEY'] = 'your_api_key_here' #
+
+
 
 # OPTION 1: Google Gemini API (Recommended for reliability and quality)
 # Ensure GOOGLE_API_KEY environment variable is set
 API_CLIENT_TYPE = "gemini"
-API_KEY = "" # Changed to GOOGLE_API_KEY
+API_KEY = os.environ.get('MY_API_KEY') # Changed to GOOGLE_API_KEY
 QA_FINALIZATION_MODEL = "gemini-1.5-flash-latest" # Or "gemini-1.5-pro-latest" or other Gemini models
 
 # OPTION 2: Local LLM (e.g., via `ollama` or `vllm` for larger models)
