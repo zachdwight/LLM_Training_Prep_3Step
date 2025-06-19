@@ -1,38 +1,39 @@
 import os
 import json
 from unstructured.partition.pdf import partition_pdf
-#---
-#Notes/Fixes: You may need to downgrade/specify pdfminer (pip install pdfminer.sxi==20220524) for unstructured
-#---
-
+print(partition_pdf)
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from tqdm.auto import tqdm
 import textwrap
+os.environ["OCR_AGENT"] = "unstructured_pytesseract"
 
 # --- Configuration ---
-PDF_PATH = "molecular_diagnostics_textbook.pdf" # Replace with your PDF file
-SUGGESTIONS_OUTPUT_PATH = "molecular_diagnostics_qa_suggestions.txt" # Output file for human review
+PDF_PATH = "/home/biostats.pdf" # Replace with your PDF file
+SUGGESTIONS_OUTPUT_PATH = "biostats_suggestions.txt" # Output file for human review
 
 # Your local LLM details
 MODEL_ID = "prithivMLmods/Llama-Express.1-Tiny"
 
 # Parameters for Unstructured.io PDF parsing
-UNSTRUCTURED_STRATEGY = "fast" # "auto", "fast", "hi_res" - hi_res can be slower but more accurate
-
+UNSTRUCTURED_STRATEGY = "auto" # "auto", "fast", "hi_res" - hi_res can be slower but more accurate
+UNSTRUCTURED_STRATEGY = "fast"  # or "auto"
 # Prompt for the local LLM to generate suggestions
 # Emphasize summary or question ideas, not structured Q&A JSON.
 LOCAL_LLM_SUGGESTION_PROMPT_TEMPLATE = """
 Context:
 {text_chunk}
 
-Based on the above context from a molecular diagnostics textbook, provide a concise summary of the key information, and then list 3-5 potential questions that could be answered using only this text. Format these as bullet points.
+Based on the above context from a biostatistics textbook, provide a 1 sentence summary of two key points, and then list 2 potential questions that could be answered using only this text.
+Strictly follow this output format:
 
 Summary:
--
+- [Your summary point 1]
+- [Your summary point 2]
 
 Questions:
--
+- [Question 1]
+- [Question 2]
 """
 
 # --- Functions ---
@@ -70,7 +71,7 @@ def get_text_chunks_from_elements(elements):
     text_chunks = []
     current_chunk = ""
     for element in elements:
-        if hasattr(element, "text") and element.text: #loosen or tighten this condition to filter elements
+        if hasattr(element, "text") and element.text:
             text_to_add = element.text.strip()
             if text_to_add:
                 # Simple heuristic to combine small text bits
@@ -129,6 +130,8 @@ def get_llm_suggestions(text_chunk, llm_pipeline):
         )
         # Extract the generated text from the last message in the conversation
         generated_text = outputs[0]["generated_text"][-1]["content"]
+        if generated_text.strip().startswith("<|thinking|>"):
+            generated_text = generated_text.split("<|thinking|>", 1)[1].strip()
         return generated_text
     except Exception as e:
         print(f"Error getting LLM suggestions for chunk: {e}")
@@ -203,7 +206,8 @@ if __name__ == "__main__":
     if not elements:
         print("No elements extracted from PDF. Exiting.")
         exit()
-
+    for i, el in enumerate(elements[:20]):  # show first 20 for debugging
+        print(f"Element {i}: category={el.category}, text={el.text[:60]}")
     # 2. Convert elements into coherent text chunks for Q&A generation
     text_chunks_for_qa = get_text_chunks_from_elements(elements)
     print(f"Prepared {len(text_chunks_for_qa)} text chunks for Q&A generation.")
@@ -221,16 +225,3 @@ if __name__ == "__main__":
 
         llm_suggestions = get_llm_suggestions(chunk, local_llm_pipe)
         save_suggestions_for_review(i + 1, chunk, llm_suggestions, SUGGESTIONS_OUTPUT_PATH)
-
-        # Optional: Add a small delay if your GPU is being hammered or you want to see output in real-time
-        # import time
-        # time.sleep(0.5)
-
-    print(f"\nFinished generating suggestions. Review them in: {SUGGESTIONS_OUTPUT_PATH}")
-    print("\n--- Next Steps --- THE MANUAL WAY....or utilize the follow-up script to automate the rest with a large LLM")
-    print("1. Open `molecular_diagnostics_qa_suggestions.txt`.")
-    print("2. Manually review each chunk's summary and suggested questions.")
-    print("3. Based on the suggestions and original text, formulate high-quality Q&A pairs.")
-    print("4. Save these Q&A pairs into a JSONL file (e.g., `molecular_diagnostics_qa.jsonl`)")
-    print("   Each line in the JSONL file should be like: `{\"text\": \"<|user|>Your question here<|assistant|>Your answer here\"}`")
-    print("5. Use this meticulously crafted JSONL file to fine-tune TinyLlama/TinyLlama-1.1B-Chat-v1.0 (as per the previous fine-tuning example).")
