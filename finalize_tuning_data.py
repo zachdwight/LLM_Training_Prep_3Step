@@ -58,6 +58,11 @@ Output JSON:
 # TinyLlama's chat template for the final output (for fine-tuning)
 TINYLAMA_CHAT_TEMPLATE = "<|user|>\n{instruction}\n<|assistant|>\n{response}"
 
+# alternate accepted structure:
+#TINYLAMA_CHAT_TEMPLATE = (
+#    "<s>[INST] {instruction} [/INST]{output}</s>"
+#)
+
 # --- Initialize LLM Client ---
 def initialize_llm_client(client_type, model_name, api_key=None, api_base=None):
     if client_type == "gemini":
