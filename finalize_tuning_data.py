@@ -354,6 +354,6 @@ if __name__ == "__main__":
     print("\n--- Next Steps ---")
     print("1. Your `molecular_diagnostics_qa.jsonl` file is now ready.")
     print("2. Use this JSONL file for fine-tuning TinyLlama/TinyLlama-1.1B-Chat-v1.0 (as shown in the previous example).")
-    print("   Remember to load the dataset using: `dataset = load_dataset('json', data_files='molecular_diagnostics_qa.jsonl')`")
+    print("   Remember to load the dataset using: `dataset = load_dataset('json', data_files='fine-tune.jsonl')`")
     print("   And set `formatting_func=lambda example: example['text']` in your SFTTrainer.")
     print("3. Always perform human evaluation on a sample of the fine-tuned model's output to ensure quality.")
