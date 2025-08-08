@@ -7,8 +7,8 @@ from tqdm.auto import tqdm
 import google.generativeai as genai # Import the Gemini library
 
 # --- Configuration ---
-SUGGESTIONS_INPUT_PATH = "molecular_diagnostics_qa_suggestions.txt"
-FINAL_JSONL_OUTPUT_PATH = "molecular_diagnostics_qa.jsonl" # This is the file for fine-tuning
+SUGGESTIONS_INPUT_PATH = "/home/suggestions/"
+FINAL_JSONL_OUTPUT_PATH = "/home/suggestions/final/fine-tune.jsonl" # This is the file for fine-tuning
 
 # --- Larger LLM Configuration (Choose one) ---
 os.environ['MY_API_KEY'] = 'your_api_key_here' #
@@ -32,14 +32,15 @@ QA_FINALIZATION_MODEL = "gemini-1.5-flash-latest" # Or "gemini-1.5-pro-latest" o
 # you'll need to adapt the client instantiation accordingly.
 
 # Prompt for the *larger* LLM to convert suggestions into structured Q&A
+# Plese note it is good to tell it the area of expertise like highly skilled biotechnician or expert marketing guru...
 FINALIZATION_PROMPT_TEMPLATE = """
-You are an expert in biostatistics and a highly skilled data curator.
-Your task is to review the provided "LLM Suggestions" which include a summary and potential questions derived from a textbook chunk.
-Your goal is to extract the core informational questions and their precise answers based *only* on the "Original Text Chunk".
+You are a highly skilled data curator.
+Your task is to review the provided "LLM Suggestions" which include a short summary and potential questions and answers derived from a PDF.
+Your goal is to examine and update or correct the potential question and answers pairs for accuracy and clarity.
 You must ensure answers are concise, accurate, and directly supported by the original text.
 
 Strictly follow these rules:
-- Generate 2 question-answer pairs that a biostats student would need to know.
+- Generate 2 question-answer pairs.
 - Each pair must be a direct question and a concise answer.
 - The answer must be completely derivable from the "Original Text Chunk". Do NOT invent information.
 - The "LLM Suggestions" are *only* ideas; use the "Original Text Chunk" for definitive answers.
@@ -276,55 +277,76 @@ def append_qa_to_jsonl(qa_data, output_file):
 
 # --- Main Script Execution ---
 if __name__ == "__main__":
-    if not os.path.exists(SUGGESTIONS_INPUT_PATH):
-        print(f"Error: Suggestions file not found at '{SUGGESTIONS_INPUT_PATH}'.")
-        print("Please run the previous script (`generate_llm_assisted_qa.py`) first to create it.")
+    # The original script processes a single file. We need to update this to handle a directory.
+    # First, let's change the input path to a directory.
+    SUGGESTIONS_INPUT_DIRECTORY = SUGGESTIONS_INPUT_PATH  # Assuming SUGGESTIONS_INPUT_PATH is now a directory.
+
+    if not os.path.isdir(SUGGESTIONS_INPUT_DIRECTORY):
+        print(f"Error: Suggestions directory not found at '{SUGGESTIONS_INPUT_DIRECTORY}'.")
+        print("Please ensure the directory exists and contains the suggestion files.")
         exit()
 
     # Remove existing output file if it exists, to start fresh
     if os.path.exists(FINAL_JSONL_OUTPUT_PATH):
         os.remove(FINAL_JSONL_OUTPUT_PATH)
         print(f"Removed existing output file: {FINAL_JSONL_OUTPUT_PATH}")
+    
+    # 1. Get all suggestion files from the directory
+    # We will process each file one by one.
+    suggestion_files = [f for f in os.listdir(SUGGESTIONS_INPUT_DIRECTORY) if f.endswith(".txt")]
+    
+    if not suggestion_files:
+        print(f"[CRITICAL] No .txt suggestion files found in '{SUGGESTIONS_INPUT_DIRECTORY}'. Exiting.")
+        exit()
 
-    # 1. Parse the suggestions file
-    chunks_for_finalization = parse_suggestions_file(SUGGESTIONS_INPUT_PATH)
+    print(f"Found {len(suggestion_files)} suggestion files to process.")
     print(f"Initialized LLM client for model: {QA_FINALIZATION_MODEL_NAME}")
 
-    print(f"\n[DEBUG_MAIN] Total chunks prepared for finalization loop: {len(chunks_for_finalization)}")
-    if not chunks_for_finalization:
-        print("[CRITICAL] No chunks to process after parsing. Exiting.")
-        exit() # Exit immediately if no chunks were parsed
-    else:
-        # Print a snippet of the first parsed chunk to confirm content
-        print(f"[DEBUG_MAIN] First chunk's original_chunk (first 100 chars): {chunks_for_finalization[0]['original_chunk'][:100]}...")
-        print(f"[DEBUG_MAIN] First chunk's llm_suggestions (first 100 chars): {chunks_for_finalization[0]['llm_suggestions'][:100]}...")
-
-
-    # 2. Iterate through parsed chunks and generate final Q&A pairs
+    # 2. Iterate through each file in the directory
     total_qa_finalized = 0
     print("\n--- Finalizing Q&A pairs (this may take a while and consume API tokens if using API LLM) ---")
-    for i, chunk_data in enumerate(tqdm(chunks_for_finalization, desc="Finalizing Q&A for chunks")):
-        chunk_id = chunk_data["chunk_id"]
-        original_chunk = chunk_data["original_chunk"]
-        llm_suggestions = chunk_data["llm_suggestions"]
 
-        if len(original_chunk.strip()) < 50: # Minimum length for a meaningful Q&A
-            print(f"[DEBUG_MAIN_SKIP] Skipping very short original chunk (ID: {chunk_id}, length: {len(original_chunk.strip())}).")
+    for suggestion_file_name in tqdm(suggestion_files, desc="Processing suggestion files"):
+        file_path = os.path.join(SUGGESTIONS_INPUT_DIRECTORY, suggestion_file_name)
+        
+        # Parse the suggestions from the current file
+        try:
+            chunks_for_finalization = parse_suggestions_file(file_path)
+            if not chunks_for_finalization:
+                print(f"Skipping file '{suggestion_file_name}' as no chunks were parsed.")
+                continue
+        except Exception as e:
+            print(f"Error parsing file '{suggestion_file_name}': {e}. Skipping.")
             continue
+        
+        # 3. Iterate through parsed chunks from the current file and generate final Q&A pairs
+        for chunk_data in chunks_for_finalization:
+            chunk_id = chunk_data.get("chunk_id", "Unknown") # Use .get() to handle missing keys gracefully
+            original_chunk = chunk_data.get("original_chunk", "")
+            llm_suggestions = chunk_data.get("llm_suggestions", "")
+            
+            if len(original_chunk.strip()) < 50:  # Minimum length for a meaningful Q&A
+                print(f"[DEBUG_MAIN_SKIP] Skipping very short original chunk (ID: {chunk_id}, length: {len(original_chunk.strip())}) from file {suggestion_file_name}.")
+                continue
 
-        print(f"[DEBUG_MAIN] Attempting to generate QA for Chunk ID: {chunk_id}")
-        qa_pairs = generate_final_qa(original_chunk, llm_suggestions, llm_client, QA_FINALIZATION_MODEL, API_CLIENT_TYPE)
+            print(f"[DEBUG_MAIN] Attempting to generate QA for Chunk ID: {chunk_id} from file {suggestion_file_name}")
+            try:
+                qa_pairs = generate_final_qa(original_chunk, llm_suggestions, llm_client, QA_FINALIZATION_MODEL, API_CLIENT_TYPE)
+            except Exception as e:
+                print(f"Error generating QA for Chunk ID: {chunk_id} from file {suggestion_file_name}: {e}")
+                qa_pairs = None
 
-        if qa_pairs:
-            print(f"[DEBUG_MAIN] Successfully generated {len(qa_pairs)} QA pairs for Chunk ID: {chunk_id}. Appending to JSONL.")
-            append_qa_to_jsonl(qa_pairs, FINAL_JSONL_OUTPUT_PATH)
-            total_qa_finalized += len(qa_pairs)
-        else:
-            print(f"[DEBUG_MAIN_FAIL] No QA pairs generated for Chunk ID: {chunk_id}.")
+            if qa_pairs:
+                print(f"[DEBUG_MAIN] Successfully generated {len(qa_pairs)} QA pairs for Chunk ID: {chunk_id}. Appending to JSONL.")
+                append_qa_to_jsonl(qa_pairs, FINAL_JSONL_OUTPUT_PATH)
+                total_qa_finalized += len(qa_pairs)
+            else:
+                print(f"[DEBUG_MAIN_FAIL] No QA pairs generated for Chunk ID: {chunk_id}.")
 
-        # Crucial for Gemini 1.5 Flash free tier (15 RPM)
-        # 60 seconds / 15 requests = 4 seconds per request minimum
-        time.sleep(4.0)
+            # Crucial for Gemini 1.5 Flash free tier (15 RPM)
+            # 60 seconds / 15 requests = 4 seconds per request minimum
+            # This sleep is now inside the inner loop, which is correct since the API call happens per chunk.
+            time.sleep(4.0)
 
     print(f"\nFinished finalizing Q&A pairs. Total pairs generated: {total_qa_finalized}")
     print(f"Final fine-tuning dataset saved to: {FINAL_JSONL_OUTPUT_PATH}")
