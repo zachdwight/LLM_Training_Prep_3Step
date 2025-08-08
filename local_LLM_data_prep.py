@@ -12,8 +12,10 @@ os.environ["OCR_AGENT"] = "unstructured_pytesseract"
 PDF_PATH = "/home/biostats.pdf" # Replace with your PDF file
 SUGGESTIONS_OUTPUT_PATH = "biostats_suggestions.txt" # Output file for human review
 
-# Your local LLM details
-MODEL_ID = "prithivMLmods/Llama-Express.1-Tiny"
+# Some ideas for a local LLM
+#MODEL_ID = "prithivMLmods/Llama-Express.1-Tiny"  #very chatty and chain of thought so could be good for certain applications
+#MODEL_ID = "google/gemma-2b-it" #performs well
+MODEL_ID = "microsoft/Phi-3-mini-4k-instruct" #follows instructions super well so I prefer in this case.  
 
 # Parameters for Unstructured.io PDF parsing
 UNSTRUCTURED_STRATEGY = "auto" # "auto", "fast", "hi_res" - hi_res can be slower but more accurate
