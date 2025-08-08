@@ -66,7 +66,7 @@ This two-step approach leverages:
 
 * **Robust PDF Parsing:** Utilizes `Unstructured.io` for intelligent extraction of text, titles, and tables from complex PDF layouts.
 * **Semantic Chunking:** Organizes extracted content into coherent, context-rich chunks.
-* **Local LLM Assistance:** Employs your specified local LLM (`prithivMLmods/Llama-Express.1-Tiny` in the example) to provide summaries and question ideas for each chunk.
+* **Local LLM Assistance:** Employs your specified local LLM (`prithivMLmods/Llama-Express.1-Tiny` in the example but also try `microsoft/Phi-3-mini-4k-instruct` or `google/gemma-2b-it`) to provide summaries and question ideas for each chunk.  Both Google and Microsoft options are less chatty (instruct vs chat style).
 * **Automated Q&A Finalization:** Leverages a powerful LLM (e.g., Google Gemini or OpenAI, or a strong self-hosted model) to convert suggestions into structured Q&A pairs.
 * **Fine-tuning Ready Output:** Generates a `.jsonl` file formatted for direct use with Hugging Face's `SFTTrainer` (e.g., for `TinyLlama/TinyLlama-1.1B-Chat-v1.0`).
 
@@ -138,7 +138,7 @@ Place your molecular diagnostics textbook PDF file in the root directory of this
 This pipeline consists of two sequential Python scripts.
 Step 1: Generate LLM-Assisted Q&amp;A Suggestions
 
-Run this script (generate_llm_assisted_qa.py) to parse your PDF, chunk its content, and use your local Llama-Express.1-Tiny model to generate summaries and potential questions for each chunk. The output is a human-readable text file that you'll use for refinement in the next step.
+Run this script (generate_llm_assisted_qa.py) to parse your PDF, chunk its content, and use your local Llama-Express.1-Tiny model to generate summaries and potential questions for each chunk. However, I have seen other options perform better such as Google's Gemma or Microsoft's PHI-3 smaller models.  These models tend to follow directions better so it is good to compare your local LLM options.  The output is a human-readable text file that you'll use for refinement in the next step.
 
 ```
 python local_LLM_data_prep.py
