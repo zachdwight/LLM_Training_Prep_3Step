@@ -178,7 +178,7 @@ def generate_final_qa(original_chunk, llm_suggestions, api_client, model_name, a
             if os.getenv("GOOGLE_API_KEY") is None and API_KEY is None:
                 print("[DEBUG_GEMINI_ERROR] GOOGLE_API_KEY environment variable is not set, and API_KEY in script is None.")
                 return []
-            elif API_KEY == "YOUR_GEMINI_API_KEY_HERE" or API_KEY == "AIzaSyA3oYU1HJa_-WSWWdAvxx6vk0585HDY3zI": # Check for your specific placeholder key
+            elif API_KEY == "YOUR_GEMINI_API_KEY_HERE": # Check for your specific placeholder key
                  print("[DEBUG_GEMINI_WARNING] Using placeholder API_KEY in script. Ensure it's a valid, active key.")
             elif not API_KEY or API_KEY == "":
                 print("[DEBUG_GEMINI_ERROR] API_KEY is set but empty or invalid in script configuration.")
