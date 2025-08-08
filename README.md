@@ -35,15 +35,15 @@ This two-step approach leverages:
 ### Step 1: Local Model for Initial Suggestions
 
 - **Objective**:  
-  Utilize a smaller, local LLM to generate preliminary suggestions from a PDF textbook.
+  Utilize a smaller, local LLM to generate preliminary suggestions from a batch of PDFs.
 
 - **Process**:
-  - Extract text from the PDF.
+  - Extract text from each PDF.
   - Input extracted content into the local LLM.
   - Generate initial suggestions or summaries.
 
 - **Output**:  
-  A set of preliminary suggestions ready for refinement.
+  A set of preliminary suggestions ready for refinement for each PDF.
 
 ---
 
