@@ -27,3 +27,22 @@ How It Works
     Local LLM Generation: For each text chunk, the script uses the Hugging Face transformers pipeline to run the selected LLM. It's given a specific prompt to act as an assistant that organizes text into Q&A pairs. This process generates an initial draft of questions and answers.
 
     Saving for Review: Finally, the script saves the original text chunk and the LLM's generated Q&A suggestions to a .json file for each PDF. This file serves as the input for the next stage, allowing a human to easily review, edit, and curate the generated content.
+
+
+## Step 2
+
+This script is the crucial human-in-the-loop stage where you review and refine the raw output from Step 1. The goal is to ensure the generated Q&A pairs are high-quality, accurate, and ready to be used for fine-tuning a language model.
+
+How to Curate the Data
+
+    Locate the Output: Navigate to the home/output_json/ directory. Inside, you will find text files (named like [pdf_name]_suggestions.json) that contain the output from the previous script.
+
+    Review and Edit: Open each file and review the Original Text Chunk and the LLM Suggestions. The LLM's suggestions are a first draft and will often contain inaccuracies, formatting errors, or less-than-ideal phrasing.
+
+        Correct Inaccuracies: Check the LLM-generated answers against the original text. If an answer is wrong, edit it to be factually correct.
+
+        Improve Wording: Rework the questions and answers to be clear, concise, and representative of a good training example. The goal is to create data that will teach the LLM to follow instructions and generate accurate responses.
+
+        Refine Formatting: While the script is designed to parse several formats, maintaining a consistent **Question 1:**... **Answer 1:**... style is best practice for clarity and reliable parsing.
+
+    Prepare for the Next Step: Once you have reviewed and edited all the suggestion files, the curated data is ready for the final processing stage. Do not change the file names or their locations.
