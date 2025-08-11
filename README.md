@@ -43,6 +43,27 @@ How to Curate the Data
 
         Improve Wording: Rework the questions and answers to be clear, concise, and representative of a good training example. The goal is to create data that will teach the LLM to follow instructions and generate accurate responses.
 
+## Step 3
+
+This final script automates the process of generating a clean, high-quality dataset for fine-tuning an LLM. It takes the curated Q&A pairs from Step 2 and uses a local LLM to perform an automated quality check, correcting and filtering the data.
+
+How It Works
+
+    Automated Evaluation: The script loads the curated Q&A pairs and feeds them to the same local LLM used in Step 1. It prompts the model to act as a quality control agent, evaluating each pair for clarity, coherence, and relevance.
+
+    Filtering and Correction:
+
+        "Clear": If an example is labeled as "Clear," it is automatically stripped of any context from the original PDF and added to the final dataset. This ensures the fine-tuning data contains only the essential Q&A format.
+
+        "Unclear" / "Needs Improvement": If an example is flagged, the script attempts to use the LLM to automatically correct the question and then adds the corrected version to the dataset.
+
+        Skipping: Examples that cannot be corrected or are malformed are skipped, preventing low-quality data from contaminating the final dataset.
+
+    Final Output: The script produces two key outputs:
+
+        cleaned_finetune.jsonl: A .jsonl file containing the final, high-quality, and cleaned dataset. This file is ready to be used directly for fine-tuning a language model.
+
+        evaluation.json: A detailed report of the entire process, including the original and corrected messages, and the LLM's evaluation for each entry. This provides a transparent record of the automated curation process.
         Refine Formatting: While the script is designed to parse several formats, maintaining a consistent **Question 1:**... **Answer 1:**... style is best practice for clarity and reliable parsing.
 
     Prepare for the Next Step: Once you have reviewed and edited all the suggestion files, the curated data is ready for the final processing stage. Do not change the file names or their locations.
