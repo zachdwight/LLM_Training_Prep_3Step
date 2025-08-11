@@ -10,7 +10,7 @@ os.environ["OCR_AGENT"] = "unstructured_pytesseract"
 
 # --- Configuration ---
 PDF_DIR = "/home/pdfs/"
-OUTPUT_DIR = "/home/suggestions/"
+OUTPUT_DIR = "/home/output_json/"
 
 # Some ideas for a local LLM
 #MODEL_ID = "prithivMLmods/Llama-Express.1-Tiny"  #very chatty and chain of thought so could be good for certain applications
