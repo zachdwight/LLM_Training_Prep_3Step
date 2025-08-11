@@ -112,7 +112,7 @@ def write_jsonl(data, output_file):
             f.write('\n')
 
 if __name__ == "__main__":
-    input_directory = "/home/zach/Desktop/iMelt/output_json/"
+    input_directory = "/home/output_json/"
     output_file = "formatted_for_tinyllama.jsonl"
 
     print(f"📂 Scanning: {input_directory}")
