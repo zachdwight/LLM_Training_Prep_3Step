@@ -19,7 +19,7 @@ This script is the first stage of the pipeline. It takes a collection of PDFs, e
 
 ### 2. ✍️ Step 2: `format_json.py`
 
-This is the **human-in-the-loop stage** where you manually review and refine the raw output from Step 1. The goal is to ensure the Q&A pairs are accurate, clear, and high-quality before they are used for training.
+This is the **human-in-the-loop stage** where you manually review and refine the raw output from Step 1. The goal is to ensure the Q&A pairs are accurate, clear, and high-quality before they are used for training.  However, you can simply run as-is for formatting if you are ok with potentially more question/answer paring in the next step.
 
 #### How to Curate the Data
 
