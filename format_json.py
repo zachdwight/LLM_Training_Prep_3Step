@@ -1,3 +1,4 @@
+import argparse
 import os
 import json
 import re
@@ -112,8 +113,13 @@ def write_jsonl(data, output_file):
             f.write('\n')
 
 if __name__ == "__main__":
-    input_directory = "/home/output_json/"
-    output_file = "formatted_for_tinyllama.jsonl"
+    parser = argparse.ArgumentParser(description="Step 2: Parse suggestion files into JSONL fine-tuning format.")
+    parser.add_argument("--input-dir", default="/home/output_json/", help="Directory of *_suggestions.json files from Step 1")
+    parser.add_argument("--output",    default="formatted_finetune.jsonl", help="Output JSONL file path")
+    args = parser.parse_args()
+
+    input_directory = args.input_dir
+    output_file     = args.output
 
     print(f"📂 Scanning: {input_directory}")
     examples = process_directory(input_directory)

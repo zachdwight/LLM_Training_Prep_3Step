@@ -1,21 +1,8 @@
+import argparse
 import json
 from transformers import pipeline
 from tqdm import tqdm
 import re
-
-# === Model Setup ===
-MODEL_ID = "microsoft/Phi-3-mini-4k-instruct"
-print(f"🔄 Loading local LLM: {MODEL_ID}...")
-
-local_llm_pipe = pipeline(
-    "text-generation",
-    model=MODEL_ID,
-    torch_dtype="auto",
-    device_map="auto",
-    max_new_tokens=150,
-    do_sample=False,
-    return_full_text=False
-)
 
 # === Prompts ===
 
@@ -63,7 +50,7 @@ def parse_evaluation_response(raw_response):
 
 # === Main Process ===
 
-def process_and_filter(jsonl_input, jsonl_cleaned_output, json_eval_output):
+def process_and_filter(local_llm_pipe, jsonl_input, jsonl_cleaned_output, json_eval_output):
     with open(jsonl_input, 'r', encoding='utf-8') as infile:
         lines = infile.readlines()
 
@@ -162,11 +149,26 @@ def process_and_filter(jsonl_input, jsonl_cleaned_output, json_eval_output):
     print(f"📝 Evaluation report written to: {json_eval_output}")
 
 if __name__ == "__main__":
-    input_jsonl = "formatted_for_tinyllama.jsonl"
-    output_jsonl = "cleaned_finetune.jsonl"
-    eval_json = "evaluation.json"
+    parser = argparse.ArgumentParser(description="Step 3: Evaluate and clean fine-tuning data using a local LLM.")
+    parser.add_argument("--input",      default="formatted_finetune.jsonl", help="JSONL file from Step 2")
+    parser.add_argument("--output",     default="cleaned_finetune.jsonl",   help="Output cleaned JSONL")
+    parser.add_argument("--eval-out",   default="evaluation.json",          help="Evaluation report JSON")
+    parser.add_argument("--model",      default="microsoft/Phi-3-mini-4k-instruct", help="HuggingFace model ID")
+    args = parser.parse_args()
 
-    process_and_filter(input_jsonl, output_jsonl, eval_json)
+    print(f"🔄 Loading local LLM: {args.model}...")
+    local_llm_pipe = pipeline(
+        "text-generation",
+        model=args.model,
+        torch_dtype="auto",
+        device_map="auto",
+        max_new_tokens=150,
+        do_sample=False,
+        return_full_text=False
+    )
+    print("✅ Model loaded.")
+
+    process_and_filter(local_llm_pipe, args.input, args.output, args.eval_out)
 
 
 

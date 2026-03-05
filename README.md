@@ -1,46 +1,146 @@
 # LLM Training Data Prep: A 3-Step Pipeline
 
-This repository provides a 3-step pipeline for preparing high-quality, fine-tuning data for Large Language Models (LLMs). The process automates the extraction of content from PDFs, generates initial Q&A pairs using a local LLM, allows for a crucial human-in-the-loop curation step, and then performs a final automated quality check to create a clean, ready-to-use dataset.
+> Turn a folder of PDFs into a clean, fine-tuning-ready JSONL dataset — with a human-in-the-loop review step in the middle.
 
-***
+```
+PDFs  ──►  Step 1: extract Q&A suggestions  ──►  *human review*  ──►  Step 2: format  ──►  Step 3: quality-check  ──►  cleaned_finetune.jsonl
+```
 
-### 1. ⚙️ Step 1: `pdfs_to_ideas_with_llm.py`
+---
 
-This script is the first stage of the pipeline. It takes a collection of PDFs, extracts their text content, and uses a local LLM to generate an initial set of Q&A pairs. The output is a raw text file for each PDF, containing both the original content chunks and the LLM's suggestions.
+## Setup
 
-#### How It Works
+```bash
+git clone https://github.com/zachdwight/LLM_Training_Prep_3Step.git
+cd LLM_Training_Prep_3Step
 
-* **PDF Parsing**: It uses the `unstructured` library to partition each PDF into structured elements like paragraphs and tables.
-* **Text Chunking**: The elements are then combined into coherent, context-rich text chunks suitable for LLM processing.
-* **LLM Generation**: A local LLM (pre-configured to use **`microsoft/Phi-3-mini-4k-instruct`**) is prompted to generate two question-and-answer pairs for each chunk.
-* **Output**: The suggestions are saved to a `.json` file (named `[pdf_name]_suggestions.json`) in the `/home/output_json/` directory, ready for human review.
+pip install -r requirements.txt
+```
 
-***
+> **GPU recommended** — Steps 1 and 3 run a local LLM (`microsoft/Phi-3-mini-4k-instruct` by default).
+> If you only have CPU, expect step 1 to be slow. Swap in a smaller model with `--model`.
 
-### 2. ✍️ Step 2: `format_json.py`
+---
 
-This is the **human-in-the-loop stage** where you manually review and refine the raw output from Step 1. The goal is to ensure the Q&A pairs are accurate, clear, and high-quality before they are used for training.  However, you can simply run as-is for formatting if you are ok with potentially more question/answer paring in the next step.
+## Step 1 — `pdfs_to_ideas_with_llm.py`
 
-#### How to Curate the Data
+Parses each PDF into text chunks, feeds them to a local LLM, and saves the generated Q&A suggestions for human review.
 
-1.  **Review**: Open the `[pdf_name]_suggestions.json` files in the `/home/output_json/` directory.
-2.  **Edit**:
-    * **Correct** any factual inaccuracies in the LLM-generated answers by checking them against the `Original Text Chunk`.
-    * **Improve** the wording of both questions and answers to make them concise and effective for training.
-    * **Maintain Consistency**: A consistent format like `**Question 1:**... **Answer 1:**...` is recommended for reliable parsing in the next step.
+```bash
+python pdfs_to_ideas_with_llm.py \
+  --pdf-dir    ./pdfs \
+  --output-dir ./output \
+  --model      microsoft/Phi-3-mini-4k-instruct \
+  --strategy   fast
+```
 
-***
+| Flag | Default | Description |
+|---|---|---|
+| `--pdf-dir` | `/home/pdfs/` | Folder of input PDFs |
+| `--output-dir` | `/home/output_json/` | Where to write `*_suggestions.json` files |
+| `--model` | `microsoft/Phi-3-mini-4k-instruct` | Any HuggingFace causal-LM |
+| `--strategy` | `fast` | Unstructured.io strategy: `fast`, `auto`, or `hi_res` |
 
-### 3. ✅ Step 3: `finalize_tuning_data.py`
+**Output:** one `[pdf_name]_suggestions.json` per PDF in the output directory.
+*(Note: these are structured text files, not JSON — the `.json` extension is intentional for easy identification.)*
 
-This final script automates the process of generating a clean, high-quality dataset. It takes the curated Q&A pairs from Step 2 and uses a local LLM to perform an automated quality check, correcting and filtering the data.
+---
 
-#### How It Works
+## Step 2 — Human Review + `format_json.py`
 
-* **Automated Evaluation**: The script uses a local LLM as a quality control agent, evaluating each Q&A pair for clarity and coherence.
-* **Filtering**:
-    * **"Clear" examples** are stripped of their context and added to the final dataset.
-    * **"Unclear" or "Needs Improvement" examples** have their questions automatically rewritten by the LLM and are then added to the final dataset.
-* **Final Output**: The script produces two files:
-    * `cleaned_finetune.jsonl`: The final, clean dataset ready for fine-tuning.
-    * `evaluation.json`: A detailed report of the automated quality control process.
+### Human review (do this first)
+
+Open each `*_suggestions.json` in a text editor. For each chunk, check the LLM's Q&A against the `Original Text Chunk` and:
+
+- Correct factual errors
+- Improve wording
+- Keep the format consistent: `**Question 1:** ... **Answer 1:** ...`
+
+You can also skip review and run Step 2 as-is — Step 3 will catch low-quality pairs automatically.
+
+### Format the files
+
+```bash
+python format_json.py \
+  --input-dir ./output \
+  --output    formatted_finetune.jsonl
+```
+
+| Flag | Default | Description |
+|---|---|---|
+| `--input-dir` | `/home/output_json/` | Folder of `*_suggestions.json` files from Step 1 |
+| `--output` | `formatted_finetune.jsonl` | Output JSONL for Step 3 |
+
+**Output:** a JSONL file where each line is a `{"messages": [...]}` object in chat format.
+
+---
+
+## Step 3 — `finalize_tuning_data.py`
+
+Uses the local LLM to evaluate each Q&A pair. Clear pairs pass through as-is; unclear/poor ones get their questions automatically rewritten.
+
+```bash
+python finalize_tuning_data.py \
+  --input    formatted_finetune.jsonl \
+  --output   cleaned_finetune.jsonl \
+  --eval-out evaluation.json \
+  --model    microsoft/Phi-3-mini-4k-instruct
+```
+
+| Flag | Default | Description |
+|---|---|---|
+| `--input` | `formatted_finetune.jsonl` | JSONL from Step 2 |
+| `--output` | `cleaned_finetune.jsonl` | Final fine-tuning dataset |
+| `--eval-out` | `evaluation.json` | Evaluation report (per-pair verdict + rewrites) |
+| `--model` | `microsoft/Phi-3-mini-4k-instruct` | Local LLM for quality checking |
+
+**Output:**
+- `cleaned_finetune.jsonl` — ready to use with any fine-tuning framework (SFTTrainer, Axolotl, etc.)
+- `evaluation.json` — audit trail showing per-pair labels and any rewrites
+
+---
+
+## Typical Run (end to end)
+
+```bash
+# 1. Generate Q&A suggestions from PDFs
+python pdfs_to_ideas_with_llm.py --pdf-dir ./pdfs --output-dir ./output
+
+# 2. (Optional) review ./output/*_suggestions.json in your editor
+
+# 3. Format suggestions into JSONL
+python format_json.py --input-dir ./output --output formatted_finetune.jsonl
+
+# 4. Quality-check and finalize
+python finalize_tuning_data.py --input formatted_finetune.jsonl
+```
+
+---
+
+## Models
+
+The default model is `microsoft/Phi-3-mini-4k-instruct` — it follows instructions reliably, which matters for the structured Q&A format. Other options:
+
+| Model | Notes |
+|---|---|
+| `microsoft/Phi-3-mini-4k-instruct` | Default — great instruction following |
+| `google/gemma-2b-it` | Good quality, slightly larger |
+| `prithivMLmods/Llama-Express.1-Tiny` | Very fast, chain-of-thought style output |
+
+---
+
+## Output Format
+
+Each line in the final JSONL is a standard chat-format training example:
+
+```json
+{
+  "messages": [
+    {"role": "system",    "content": "You are a helpful assistant."},
+    {"role": "user",      "content": "What is X?"},
+    {"role": "assistant", "content": "Answer: X is ..."}
+  ]
+}
+```
+
+Compatible with HuggingFace `SFTTrainer`, Axolotl, LlamaFactory, and similar frameworks.

@@ -1,0 +1,15 @@
+# Step 1: PDF parsing + local LLM Q&A generation
+unstructured[pdf]
+unstructured-pytesseract
+transformers>=4.36.0
+torch
+tqdm
+textwrap3  # stdlib shim for older Python; remove if Python 3.3+
+
+# Step 2: format/parse (stdlib only — no extra deps)
+
+# Step 3: automated quality check (same local LLM stack)
+# transformers + torch already listed above
+
+# Optional: use Claude API instead of a local model
+# anthropic

@@ -1,25 +1,18 @@
+import argparse
 import os
 import json
 from unstructured.partition.pdf import partition_pdf
-print(partition_pdf)
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from tqdm.auto import tqdm
 import textwrap
 os.environ["OCR_AGENT"] = "unstructured_pytesseract"
 
-# --- Configuration ---
-PDF_DIR = "/home/pdfs/"
-OUTPUT_DIR = "/home/output_json/"
-
-# Some ideas for a local LLM
-#MODEL_ID = "prithivMLmods/Llama-Express.1-Tiny"  #very chatty and chain of thought so could be good for certain applications
-#MODEL_ID = "google/gemma-2b-it" #performs well
-MODEL_ID = "microsoft/Phi-3-mini-4k-instruct" #follows instructions super well so I prefer in this case.  
-
-# Parameters for Unstructured.io PDF parsing
-UNSTRUCTURED_STRATEGY = "auto" # "auto", "fast", "hi_res" - hi_res can be slower but more accurate
-UNSTRUCTURED_STRATEGY = "fast"  # or "auto"
+# --- Defaults (overridable via CLI args) ---
+DEFAULT_PDF_DIR    = "/home/pdfs/"
+DEFAULT_OUTPUT_DIR = "/home/output_json/"
+DEFAULT_MODEL_ID   = "microsoft/Phi-3-mini-4k-instruct"
+DEFAULT_STRATEGY   = "fast"  # "auto", "fast", "hi_res"
 # Prompt for the local LLM to generate suggestions
 # Emphasize summary or question ideas, not structured Q&A JSON.
 LOCAL_LLM_SUGGESTION_PROMPT_TEMPLATE = """
@@ -148,15 +141,29 @@ def save_suggestions_for_review(chunk_id, original_chunk, llm_suggestions, outpu
 
 # --- Main Script Execution ---
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Step 1: Extract Q&A pairs from PDFs using a local LLM.")
+    parser.add_argument("--pdf-dir",    default=DEFAULT_PDF_DIR,    help="Directory containing PDF files")
+    parser.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR, help="Directory to write suggestion files")
+    parser.add_argument("--model",      default=DEFAULT_MODEL_ID,   help="HuggingFace model ID")
+    parser.add_argument("--strategy",   default=DEFAULT_STRATEGY,   choices=["auto", "fast", "hi_res"],
+                        help="Unstructured.io PDF parsing strategy")
+    args = parser.parse_args()
+
+    PDF_DIR    = args.pdf_dir
+    OUTPUT_DIR = args.output_dir
+    MODEL_ID   = args.model
+    UNSTRUCTURED_STRATEGY = args.strategy
+
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
     # Initialize the local LLM pipeline
     print(f"Loading local LLM: {MODEL_ID}...")
     try:
-        # Use your exact pipeline setup from the provided example
         local_llm_pipe = pipeline(
             "text-generation",
             model=MODEL_ID,
             torch_dtype=torch.bfloat16,
-            device_map="auto", # Use "auto" for flexibility, or "cuda" if you're sure
+            device_map="auto",
         )
         print("Local LLM pipeline loaded successfully.")
     except Exception as e:
@@ -171,7 +178,7 @@ if __name__ == "__main__":
         print(f"\nProcessing PDF: {pdf_path}")
 
         # 1. Parse PDF into elements
-        elements = parse_pdf_to_elements(pdf_path)
+        elements = parse_pdf_to_elements(pdf_path, strategy=UNSTRUCTURED_STRATEGY)
         if not elements:
             print("No elements extracted from PDF. Skipping.")
             continue
